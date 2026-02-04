@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App - Real-time Weather Information</title>
+    <meta name="description" content="Real-time weather information with location detection, temperature, wind speed, rain probability, and air quality index - by TechProject">
+    <meta name="author" content="www.techproject.in">
+    <meta property="og:title" content="Weather App - Real-time Weather Information">
+    <meta property="og:description" content="Get comprehensive weather data including temperature, wind speed, rain probability, and air quality for any location">
+    <meta property="og:url" content="https://www.techproject.in">
+    <link rel="canonical" href="https://www.techproject.in">
+    <title>Weather App - Real-time Weather Information | TechProject</title>
     <style>
         * {
             margin: 0;
@@ -259,6 +265,30 @@
                 flex-direction: column;
             }
         }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #666;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: #764ba2;
+        }
+
+        .footer-logo {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -334,15 +364,24 @@
                 <div class="aqi-components" id="aqiComponents"></div>
             </div>
         </div>
+
+        <div class="footer">
+            <div class="footer-logo">🌐 <strong>TechProject</strong></div>
+            <div>Powered by <a href="https://www.techproject.in" target="_blank" rel="noopener noreferrer">www.techproject.in</a></div>
+        </div>
     </div>
 
     <script>
         // OpenWeatherMap API key (free tier)
         // Users should replace this with their own API key from https://openweathermap.org/api
+        // IMPORTANT: Never commit real API keys to public repositories
         const API_KEY = 'DEMO_KEY'; // This is a placeholder - see instructions below
 
-        let currentLat = null;
-        let currentLon = null;
+        // AQI labels and classes (constants)
+        const AQI_LABELS = ['', 'Good', 'Moderate', 'Unhealthy for Sensitive Groups', 
+                           'Unhealthy', 'Very Unhealthy', 'Hazardous'];
+        const AQI_CLASSES = ['', 'aqi-good', 'aqi-moderate', 'aqi-unhealthy-sensitive',
+                            'aqi-unhealthy', 'aqi-very-unhealthy', 'aqi-hazardous'];
 
         // Show loading state
         function showLoading() {
@@ -370,9 +409,9 @@
 
             navigator.geolocation.getCurrentPosition(
                 position => {
-                    currentLat = position.coords.latitude;
-                    currentLon = position.coords.longitude;
-                    fetchWeatherData(currentLat, currentLon);
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    fetchWeatherData(lat, lon);
                 },
                 error => {
                     let errorMsg = 'Unable to retrieve your location';
@@ -424,9 +463,9 @@
                     return;
                 }
 
-                currentLat = geoData[0].lat;
-                currentLon = geoData[0].lon;
-                fetchWeatherData(currentLat, currentLon);
+                const lat = geoData[0].lat;
+                const lon = geoData[0].lon;
+                fetchWeatherData(lat, lon);
             } catch (error) {
                 showError('Error fetching location: ' + error.message);
             }
@@ -454,12 +493,22 @@
                 // Fetch air quality data
                 const airUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
                 const airResponse = await fetch(airUrl);
-                const airData = await airResponse.json();
+                
+                if (!airResponse.ok) {
+                    console.warn('Air quality data not available');
+                }
+                
+                const airData = airResponse.ok ? await airResponse.json() : null;
 
                 // Fetch forecast for rain probability
                 const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
                 const forecastResponse = await fetch(forecastUrl);
-                const forecastData = await forecastResponse.json();
+                
+                if (!forecastResponse.ok) {
+                    console.warn('Forecast data not available');
+                }
+                
+                const forecastData = forecastResponse.ok ? await forecastResponse.json() : null;
 
                 displayWeatherData(weatherData, airData, forecastData);
             } catch (error) {
@@ -477,10 +526,11 @@
             document.getElementById('locationName').textContent = 
                 `${weather.name}, ${weather.sys.country}`;
             
-            // Calculate local time
-            const localTime = new Date((weather.dt + weather.timezone) * 1000);
-            document.getElementById('localTime').textContent = 
-                `🕐 ${localTime.toUTCString().replace('GMT', 'Local Time')}`;
+            // Calculate local time using timezone offset
+            const utcTime = new Date((weather.dt) * 1000);
+            const localTime = new Date(utcTime.getTime() + weather.timezone * 1000);
+            const timeString = localTime.toUTCString().replace(' GMT', '');
+            document.getElementById('localTime').textContent = `🕐 ${timeString} (Local Time)`;
             
             document.getElementById('coordinates').textContent = 
                 `📍 Lat: ${weather.coord.lat.toFixed(2)}°, Lon: ${weather.coord.lon.toFixed(2)}°`;
@@ -498,7 +548,8 @@
             // Calculate rain probability from forecast
             let rainProb = 0;
             if (forecast && forecast.list && forecast.list.length > 0) {
-                const nextHours = forecast.list.slice(0, 8); // Next 24 hours
+                // Next 24 hours (8 periods x 3-hour intervals = 24 hours)
+                const nextHours = forecast.list.slice(0, 8);
                 const rainyPeriods = nextHours.filter(period => 
                     period.weather[0].main.toLowerCase().includes('rain')
                 );
@@ -516,14 +567,9 @@
                 const aqi = air.list[0].main.aqi;
                 const components = air.list[0].components;
                 
-                const aqiLabels = ['', 'Good', 'Moderate', 'Unhealthy for Sensitive Groups', 
-                                   'Unhealthy', 'Very Unhealthy', 'Hazardous'];
-                const aqiClasses = ['', 'aqi-good', 'aqi-moderate', 'aqi-unhealthy-sensitive',
-                                    'aqi-unhealthy', 'aqi-very-unhealthy', 'aqi-hazardous'];
-                
                 const aqiElement = document.getElementById('aqiValue');
-                aqiElement.textContent = aqiLabels[aqi] || 'N/A';
-                aqiElement.className = 'aqi-value ' + (aqiClasses[aqi] || '');
+                aqiElement.textContent = AQI_LABELS[aqi] || 'N/A';
+                aqiElement.className = 'aqi-value ' + (AQI_CLASSES[aqi] || '');
 
                 // Display air quality components
                 const componentsHtml = `

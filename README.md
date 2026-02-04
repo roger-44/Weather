@@ -1,6 +1,6 @@
 # Weather Detection Website
 
-A modern, responsive weather application that detects your location and displays comprehensive weather information including temperature, wind speed, rain probability, air quality, and local time.
+A modern, responsive weather application powered by **[www.techproject.in](https://www.techproject.in)** that detects your location and displays comprehensive weather information including temperature, wind speed, rain probability, air quality, and local time.
 
 ## Features
 
@@ -124,3 +124,7 @@ OpenWeatherMap free tier includes:
 ## License
 
 This project is open source and available for personal and educational use.
+
+---
+
+**Powered by [www.techproject.in](https://www.techproject.in)** 🌐
