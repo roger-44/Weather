@@ -1,0 +1,38 @@
+# Deployment files (local only)
+*.zip
+deploy-*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Node modules (if added later)
+node_modules/
+package-lock.json
+
+# Build artifacts (if added later)
+dist/
+build/
+.cache/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# FTP credentials
+.ftpconfig
+sftp-config.json

@@ -2,6 +2,14 @@
 
 A modern, responsive weather application powered by **[www.techproject.in](https://www.techproject.in)** that detects your location and displays comprehensive weather information including temperature, wind speed, rain probability, air quality, and local time.
 
+🌐 **Live Demo**: [www.techproject.in](https://www.techproject.in)
+
+## Quick Links
+
+- 🚀 [Deployment Guide](DEPLOYMENT.md) - Deploy to www.techproject.in
+- 📖 [Full Documentation](#how-to-use) - Setup and usage instructions
+- 🐛 [Report Issues](https://github.com/roger-44/Weather/issues) - Bug reports and feature requests
+
 ## Features
 
 - 🌍 **Automatic Location Detection**: Uses browser geolocation API to detect your current location
@@ -120,6 +128,32 @@ OpenWeatherMap free tier includes:
 **City Not Found**:
 - Try different name variations (e.g., "NYC" vs "New York")
 - Include country if results are unclear (e.g., "London, UK")
+
+## Deployment
+
+This website is deployed at **[www.techproject.in](https://www.techproject.in)**.
+
+For deployment instructions, see **[DEPLOYMENT.md](DEPLOYMENT.md)** which covers:
+- GitHub Pages deployment (recommended)
+- Traditional web hosting (FTP/cPanel)
+- Cloud platforms (Netlify, Vercel, AWS)
+- DNS configuration
+- SSL/HTTPS setup
+
+### Quick Deploy
+
+```bash
+# Run the deployment script
+./deploy.sh
+```
+
+Or manually:
+1. Enable GitHub Pages in repository settings
+2. Set custom domain to `www.techproject.in`
+3. Configure DNS: CNAME record pointing `www` to `roger-44.github.io`
+4. Wait 24-48 hours for DNS propagation
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed steps.
 
 ## License
 
