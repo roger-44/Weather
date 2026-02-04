@@ -133,10 +133,25 @@ OpenWeatherMap free tier includes:
 
 This website is deployed at **[www.techproject.in](https://www.techproject.in)**.
 
+### 🚀 Deploy to Vercel (Recommended - 5 Minutes)
+
+**Your repository is ready for Vercel!** ✅
+
+1. Visit: https://vercel.com/new
+2. Import: `roger-44/Weather` repository
+3. Click Deploy
+4. Add custom domain: `www.techproject.in`
+5. Done! 🎉
+
+See **[VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)** for step-by-step instructions.
+
+### 📚 Other Deployment Options
+
 For deployment instructions, see **[DEPLOYMENT.md](DEPLOYMENT.md)** which covers:
-- GitHub Pages deployment (recommended)
+- **Vercel** (5 minutes, recommended)
+- GitHub Pages deployment
 - Traditional web hosting (FTP/cPanel)
-- Cloud platforms (Netlify, Vercel, AWS)
+- Cloud platforms (Netlify, AWS)
 - DNS configuration
 - SSL/HTTPS setup
 
