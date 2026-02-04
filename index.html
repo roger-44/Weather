@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App - Real-time Weather Information</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #locationInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #locationInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #667eea;
+            display: none;
+        }
+
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .weather-info {
+            display: none;
+        }
+
+        .location-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .location-name {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .local-time {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .coordinates {
+            font-size: 0.9em;
+            color: #999;
+        }
+
+        .main-weather {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .temperature {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .weather-description {
+            font-size: 1.5em;
+            text-transform: capitalize;
+            margin-bottom: 10px;
+        }
+
+        .feels-like {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .detail-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .detail-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 1.5em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .air-quality {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .air-quality h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .aqi-value {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .aqi-good { background: #00e400; color: white; }
+        .aqi-moderate { background: #ffff00; color: #333; }
+        .aqi-unhealthy-sensitive { background: #ff7e00; color: white; }
+        .aqi-unhealthy { background: #ff0000; color: white; }
+        .aqi-very-unhealthy { background: #8f3f97; color: white; }
+        .aqi-hazardous { background: #7e0023; color: white; }
+
+        .aqi-components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .aqi-component {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .aqi-component-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .aqi-component-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .temperature {
+                font-size: 3em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ Weather App</h1>
+        
+        <div class="search-box">
+            <input type="text" id="locationInput" placeholder="Enter city name (e.g., London, New York)">
+            <button onclick="searchLocation()">Search</button>
+            <button onclick="detectLocation()">Detect Location</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <p>⏳ Loading weather data...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="weather-info" id="weatherInfo">
+            <div class="location-header">
+                <div class="location-name" id="locationName"></div>
+                <div class="local-time" id="localTime"></div>
+                <div class="coordinates" id="coordinates"></div>
+            </div>
+
+            <div class="main-weather">
+                <div class="weather-description" id="weatherDescription"></div>
+                <div class="temperature" id="temperature"></div>
+                <div class="feels-like" id="feelsLike"></div>
+            </div>
+
+            <div class="weather-details">
+                <div class="detail-card">
+                    <div class="detail-icon">💨</div>
+                    <div class="detail-label">Wind Speed</div>
+                    <div class="detail-value" id="windSpeed"></div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">💧</div>
+                    <div class="detail-label">Humidity</div>
+                    <div class="detail-value" id="humidity"></div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🌧️</div>
+                    <div class="detail-label">Rain Probability</div>
+                    <div class="detail-value" id="rainProbability"></div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">🌡️</div>
+                    <div class="detail-label">Pressure</div>
+                    <div class="detail-value" id="pressure"></div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">👁️</div>
+                    <div class="detail-label">Visibility</div>
+                    <div class="detail-value" id="visibility"></div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-icon">☁️</div>
+                    <div class="detail-label">Cloudiness</div>
+                    <div class="detail-value" id="cloudiness"></div>
+                </div>
+            </div>
+
+            <div class="air-quality">
+                <h3>🌍 Air Quality Index</h3>
+                <div class="aqi-value" id="aqiValue"></div>
+                <div class="aqi-components" id="aqiComponents"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // OpenWeatherMap API key (free tier)
+        // Users should replace this with their own API key from https://openweathermap.org/api
+        const API_KEY = 'DEMO_KEY'; // This is a placeholder - see instructions below
+
+        let currentLat = null;
+        let currentLon = null;
+
+        // Show loading state
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('weatherInfo').style.display = 'none';
+        }
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = message;
+            document.getElementById('weatherInfo').style.display = 'none';
+        }
+
+        // Detect user's location using geolocation API
+        function detectLocation() {
+            if (!navigator.geolocation) {
+                showError('Geolocation is not supported by your browser');
+                return;
+            }
+
+            showLoading();
+
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    currentLat = position.coords.latitude;
+                    currentLon = position.coords.longitude;
+                    fetchWeatherData(currentLat, currentLon);
+                },
+                error => {
+                    let errorMsg = 'Unable to retrieve your location';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Location permission denied. Please enter a city name manually.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Location information unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Location request timed out.';
+                            break;
+                    }
+                    showError(errorMsg);
+                }
+            );
+        }
+
+        // Search for location by city name
+        async function searchLocation() {
+            const locationInput = document.getElementById('locationInput').value.trim();
+            
+            if (!locationInput) {
+                showError('Please enter a city name');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                // For demo purposes without API key
+                if (API_KEY === 'DEMO_KEY') {
+                    loadDemoData(locationInput);
+                    return;
+                }
+
+                const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(locationInput)}&limit=1&appid=${API_KEY}`;
+                const geoResponse = await fetch(geoUrl);
+                
+                if (!geoResponse.ok) {
+                    throw new Error('Location not found');
+                }
+
+                const geoData = await geoResponse.json();
+                
+                if (geoData.length === 0) {
+                    showError('Location not found. Please try another city name.');
+                    return;
+                }
+
+                currentLat = geoData[0].lat;
+                currentLon = geoData[0].lon;
+                fetchWeatherData(currentLat, currentLon);
+            } catch (error) {
+                showError('Error fetching location: ' + error.message);
+            }
+        }
+
+        // Fetch weather data from OpenWeatherMap API
+        async function fetchWeatherData(lat, lon) {
+            try {
+                // For demo purposes without API key
+                if (API_KEY === 'DEMO_KEY') {
+                    loadDemoData('Demo City');
+                    return;
+                }
+
+                // Fetch current weather
+                const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+                const weatherResponse = await fetch(weatherUrl);
+                
+                if (!weatherResponse.ok) {
+                    throw new Error('Weather data not available');
+                }
+
+                const weatherData = await weatherResponse.json();
+
+                // Fetch air quality data
+                const airUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
+                const airResponse = await fetch(airUrl);
+                const airData = await airResponse.json();
+
+                // Fetch forecast for rain probability
+                const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+                const forecastResponse = await fetch(forecastUrl);
+                const forecastData = await forecastResponse.json();
+
+                displayWeatherData(weatherData, airData, forecastData);
+            } catch (error) {
+                showError('Error fetching weather data: ' + error.message);
+            }
+        }
+
+        // Display weather data on the page
+        function displayWeatherData(weather, air, forecast) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('weatherInfo').style.display = 'block';
+
+            // Location information
+            document.getElementById('locationName').textContent = 
+                `${weather.name}, ${weather.sys.country}`;
+            
+            // Calculate local time
+            const localTime = new Date((weather.dt + weather.timezone) * 1000);
+            document.getElementById('localTime').textContent = 
+                `🕐 ${localTime.toUTCString().replace('GMT', 'Local Time')}`;
+            
+            document.getElementById('coordinates').textContent = 
+                `📍 Lat: ${weather.coord.lat.toFixed(2)}°, Lon: ${weather.coord.lon.toFixed(2)}°`;
+
+            // Main weather
+            document.getElementById('weatherDescription').textContent = weather.weather[0].description;
+            document.getElementById('temperature').textContent = `${Math.round(weather.main.temp)}°C`;
+            document.getElementById('feelsLike').textContent = 
+                `Feels like ${Math.round(weather.main.feels_like)}°C`;
+
+            // Weather details
+            document.getElementById('windSpeed').textContent = `${weather.wind.speed} m/s`;
+            document.getElementById('humidity').textContent = `${weather.main.humidity}%`;
+            
+            // Calculate rain probability from forecast
+            let rainProb = 0;
+            if (forecast && forecast.list && forecast.list.length > 0) {
+                const nextHours = forecast.list.slice(0, 8); // Next 24 hours
+                const rainyPeriods = nextHours.filter(period => 
+                    period.weather[0].main.toLowerCase().includes('rain')
+                );
+                rainProb = Math.round((rainyPeriods.length / nextHours.length) * 100);
+            }
+            document.getElementById('rainProbability').textContent = `${rainProb}%`;
+            
+            document.getElementById('pressure').textContent = `${weather.main.pressure} hPa`;
+            document.getElementById('visibility').textContent = 
+                `${(weather.visibility / 1000).toFixed(1)} km`;
+            document.getElementById('cloudiness').textContent = `${weather.clouds.all}%`;
+
+            // Air quality
+            if (air && air.list && air.list.length > 0) {
+                const aqi = air.list[0].main.aqi;
+                const components = air.list[0].components;
+                
+                const aqiLabels = ['', 'Good', 'Moderate', 'Unhealthy for Sensitive Groups', 
+                                   'Unhealthy', 'Very Unhealthy', 'Hazardous'];
+                const aqiClasses = ['', 'aqi-good', 'aqi-moderate', 'aqi-unhealthy-sensitive',
+                                    'aqi-unhealthy', 'aqi-very-unhealthy', 'aqi-hazardous'];
+                
+                const aqiElement = document.getElementById('aqiValue');
+                aqiElement.textContent = aqiLabels[aqi] || 'N/A';
+                aqiElement.className = 'aqi-value ' + (aqiClasses[aqi] || '');
+
+                // Display air quality components
+                const componentsHtml = `
+                    <div class="aqi-component">
+                        <div class="aqi-component-label">CO</div>
+                        <div class="aqi-component-value">${components.co.toFixed(1)}</div>
+                    </div>
+                    <div class="aqi-component">
+                        <div class="aqi-component-label">NO₂</div>
+                        <div class="aqi-component-value">${components.no2.toFixed(1)}</div>
+                    </div>
+                    <div class="aqi-component">
+                        <div class="aqi-component-label">O₃</div>
+                        <div class="aqi-component-value">${components.o3.toFixed(1)}</div>
+                    </div>
+                    <div class="aqi-component">
+                        <div class="aqi-component-label">PM2.5</div>
+                        <div class="aqi-component-value">${components.pm2_5.toFixed(1)}</div>
+                    </div>
+                    <div class="aqi-component">
+                        <div class="aqi-component-label">PM10</div>
+                        <div class="aqi-component-value">${components.pm10.toFixed(1)}</div>
+                    </div>
+                `;
+                document.getElementById('aqiComponents').innerHTML = componentsHtml;
+            }
+        }
+
+        // Demo data for testing without API key
+        function loadDemoData(cityName) {
+            const demoWeather = {
+                name: cityName || 'Demo City',
+                sys: { country: 'DEMO' },
+                coord: { lat: 51.51, lon: -0.13 },
+                dt: Date.now() / 1000,
+                timezone: 0,
+                weather: [{ description: 'partly cloudy', main: 'Clouds' }],
+                main: {
+                    temp: 22,
+                    feels_like: 21,
+                    humidity: 65,
+                    pressure: 1013
+                },
+                wind: { speed: 5.5 },
+                visibility: 10000,
+                clouds: { all: 40 }
+            };
+
+            const demoAir = {
+                list: [{
+                    main: { aqi: 2 },
+                    components: {
+                        co: 230.5,
+                        no2: 15.2,
+                        o3: 45.8,
+                        pm2_5: 12.3,
+                        pm10: 18.7
+                    }
+                }]
+            };
+
+            const demoForecast = {
+                list: [
+                    { weather: [{ main: 'Clear' }] },
+                    { weather: [{ main: 'Clear' }] },
+                    { weather: [{ main: 'Clouds' }] },
+                    { weather: [{ main: 'Rain' }] },
+                    { weather: [{ main: 'Clear' }] },
+                    { weather: [{ main: 'Clear' }] },
+                    { weather: [{ main: 'Clear' }] },
+                    { weather: [{ main: 'Clear' }] }
+                ]
+            };
+
+            displayWeatherData(demoWeather, demoAir, demoForecast);
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('locationInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                searchLocation();
+            }
+        });
+
+        // Show demo data on page load
+        window.addEventListener('load', function() {
+            // Display instructions if using demo key
+            if (API_KEY === 'DEMO_KEY') {
+                console.log('=== Weather App Setup Instructions ===');
+                console.log('To use real weather data:');
+                console.log('1. Get a free API key from https://openweathermap.org/api');
+                console.log('2. Replace "DEMO_KEY" in the code with your actual API key');
+                console.log('3. For now, demo data is being shown');
+                console.log('=====================================');
+            }
+            loadDemoData('London');
+        });
+    </script>
+</body>
+</html>
