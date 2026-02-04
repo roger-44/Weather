@@ -374,7 +374,9 @@
     <script>
         // OpenWeatherMap API key (free tier)
         // Users should replace this with their own API key from https://openweathermap.org/api
-        // IMPORTANT: Never commit real API keys to public repositories
+        // IMPORTANT: Never commit real API keys to public repositories!
+        // WARNING: If you replace DEMO_KEY with a real API key, do NOT commit this file.
+        // For production, use environment variables or a separate config file.
         const API_KEY = 'DEMO_KEY'; // This is a placeholder - see instructions below
 
         // AQI labels and classes (constants)
@@ -527,8 +529,8 @@
                 `${weather.name}, ${weather.sys.country}`;
             
             // Calculate local time using timezone offset
-            const utcTime = new Date((weather.dt) * 1000);
-            const localTime = new Date(utcTime.getTime() + weather.timezone * 1000);
+            // weather.timezone is offset in seconds from UTC
+            const localTime = new Date((weather.dt + weather.timezone) * 1000);
             const timeString = localTime.toUTCString().replace(' GMT', '');
             document.getElementById('localTime').textContent = `🕐 ${timeString} (Local Time)`;
             
